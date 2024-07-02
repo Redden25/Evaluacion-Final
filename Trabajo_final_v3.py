@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as py
-import matplotlib.pyplot as plt
+import matplotlib as plt
 import plotly.express as px
 
 #Permite poner el ícono de cine en el visualizador de pestaña 
