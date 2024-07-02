@@ -127,9 +127,7 @@ revenue_gen_f["Revenue_full"] = revenue_gen_f["Revenue_full"].apply(lambda x: f"
 col2.markdown("<br><br>", unsafe_allow_html=True)
 col2.dataframe(revenue_gen_f.rename(columns=nombre_columnas), hide_index=True, width=350)
 
-texto_2 = """Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc in ante ut elit sodales rutrum ut nec nibh. 
-            Maecenas orci arcu, tincidunt et purus quis, luctus ornare dui. Sed vel consequat justo, sit amet semper lacus.
-            Aenean molestie lacus in mi consequat convallis."""
+texto_2 = """A través del siguiente gráfico, podemos observar la recaudación total por género, mostrando que las películas de acción son quienes más recaudan y las de género musical quienes menos."""
 
 st.markdown(f"<div style='text-align: justify; font-size: 18px; color: {color_texto}'>{texto_2}</div><br>", unsafe_allow_html=True)
 
@@ -171,7 +169,7 @@ st.markdown(f"<div style='text-align: justify; font-size: 18px; color: {color_te
 # # # ----------------------------------- Información General -----------------------------------
 
 col3, col4, col5 = st.columns(3)
-
+#Se añaden las imagenes que fueron subidas a Imgur
 poster_dict = {
     "Action": "https://i.imgur.com/Pq1z04p.png",
     "Adventure": "https://i.imgur.com/Pq1z04p.png",
@@ -307,6 +305,7 @@ revenue_director = df_gen.groupby("Director")["Revenue_full"].sum().reset_index(
 # Seleccionar los top 10 directores según la recaudación acumulada
 top_directores = revenue_director.nlargest(10, "Revenue_full").rename(columns=nombre_columnas)
 
+#Se añade un gráfico de pastel
 fig = px.pie(
     top_directores, 
     values="Recaudación Total", 
@@ -330,10 +329,13 @@ with st.container():
 
 # # # ----------------------------------- Selector por directores -----------------------------------
 
+#Crea un select box para seleccionar el director
 directorSel = st.selectbox("Selecciona un director para ver su listado de películas", top_directores["Director"])
 director_maxre_mov = df_gen[df_gen["Director"] == directorSel]
 
+#Añade el formato de dólar a la recaudación
 director_maxre_mov["Revenue_full"] = director_maxre_mov["Revenue_full"].apply(lambda x: f"US$  {x:,.2f}")
+#Se muestra parte de los datos
 st.dataframe(director_maxre_mov.rename(columns=nombre_columnas)[["Título", "Género", "Actores", "Año", "Duración (min)", "Recaudación Total", "Metascore", "Países de producción"]], hide_index=True, width=1500)
 
 texto_7 = """Aquí puede visualizar las películas realizas por el director o directora."""
@@ -351,25 +353,12 @@ st.markdown(f"<div style='text-align: justify; font-size: 18px; color: {color_te
 
 # # # ----------------------------------- Gráfico Treemap -----------------------------------
 
+#Separa los países de producción en partes lógicas para filtrar de manera más eficiente la información
 df_expandido_pc = df_gen.assign(Production_Country=df_gen["Production_Country"].str.split(',')).explode("Production_Country")
 revenue_paisprod = df_expandido_pc.groupby(["Production_Country", "Studio_1"])["Revenue_full"].sum().reset_index()
 
+#Eligue el top ocho de estudios por cada país
 top_estudios = revenue_paisprod.groupby('Production_Country').apply(lambda x: x.nlargest(8, 'Revenue_full')).reset_index(drop=True)
-
-#  ['aggrnyl', 'agsunset', 'algae', 'amp', 'armyrose', 'balance',
-#   'blackbody', 'bluered', 'blues', 'blugrn', 'bluyl', 'brbg',
-#   'brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl',
-#   'darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric',
-#   'emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
-#   'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet',
-#   'magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges',
-#   'orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl',
-#   'piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
-#   'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu',
-#   'rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar',
-#   'spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
-#   'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid',
-#   'turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr', 'ylorrd'].
 
 color_treemap = "deep"
 
@@ -398,11 +387,9 @@ st.markdown(f"<div style='text-align: justify; font-size: 18px; color: {color_te
 
 # # # ----------------------------------- Selector por país de producción -----------------------------------
 
-
-
+#Selector por país
 paisSel = st.selectbox("Selecciona un país para ver el listado total de películas", top_estudios["Production_Country"].unique())
 pais_maxre = df_gen[df_gen["Production_Country"].str.contains(paisSel)]
-# pais_maxre = df_expandido_pc[df_expandido_pc["Production_Country"] == paisSel]
 
 pais_maxre["Revenue_full"] = pais_maxre["Revenue_full"].apply(lambda x: f"US$  {x:,.2f}")
 st.dataframe(pais_maxre.rename(columns=nombre_columnas)[["Título", "Género", "Año", "Recaudación Total", "Metascore", "Países de producción", "Estudio principal" ]], hide_index=True, width=1500)
